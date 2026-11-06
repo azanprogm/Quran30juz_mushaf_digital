@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#092b24" />
+    <title>Qur'an 30 Juz — Mushaf Digital</title>
+    <style>
+      :root {
+        --bg: #071b17;
+        --panel: #0d2922;
+        --panel2: #12372d;
+        --line: #245044;
+        --gold: #d8b66a;
+        --text: #f4f1e8;
+        --muted: #a9bdb4;
+        --green: #8dc6a5;
+      }
+      /* ===== TEMA TERANG / GELAP ===== */
+      :root {
+        color-scheme: dark;
+        --page-gradient: radial-gradient(ellipse at 80% 0%, #174334 0, transparent 38%);
+        --header-bg: #071b17d9;
+        --card-bg: linear-gradient(145deg, #12352b, #0b241e);
+        --input-bg: #071d18;
+        --button-bg: #15392e;
+        --ayah-text: #d4ddd7;
+        --ayah-border: #214438;
+      }
+      body.light-theme {
+        color-scheme: light;
+        --bg: #f5f7f2; --panel: #ffffff; --panel2: #edf4ed;
+        --line: #d7e2d8; --gold: #98712c; --text: #24352d;
+        --muted: #68796f; --green: #397a57;
+        --page-gradient: radial-gradient(ellipse at 80% 0%, #e4efe5 0, transparent 42%);
+        --header-bg: #ffffffed; --card-bg: linear-gradient(145deg,#ffffff,#f1f6f0);
+        --input-bg: #f7faf6; --button-bg: #e8f0e8;
+        --ayah-text: #35483d; --ayah-border: #dce7dd;
+      }
+      body { background: var(--page-gradient), var(--bg); }
+      body.light-theme header { background: var(--header-bg); }
+      body.light-theme .stat, body.light-theme .panel,
+      body.light-theme .surah-card { background: var(--card-bg); }
+      body.light-theme .search, body.light-theme select { background: var(--input-bg); color: var(--text); }
+      body.light-theme .btn { background: var(--button-bg); color: var(--text); }
+      body.light-theme .ayah-id { color: var(--ayah-text); }
+      body.light-theme .ayah { border-bottom-color: var(--ayah-border); }
+      body.light-theme .surah-item:hover, body.light-theme .surah-item.active { background: var(--panel2); }
+      .header-tools { display:flex; align-items:center; gap:10px; }
+      .theme-toggle { border:1px solid var(--line); border-radius:999px; padding:9px 13px; color:var(--text); background:var(--button-bg); cursor:pointer; white-space:nowrap; font-size:12px; }
+      .main-nav { max-width:1200px; margin:18px auto 0; display:flex; flex-wrap:wrap; gap:8px; }
+      .main-nav a { color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:7px 13px; font-size:12px; }
+      .main-nav a:hover { color:var(--gold); border-color:var(--gold); background:var(--panel2); }
+      .content-section { margin:38px 0; scroll-margin-top:145px; }
+      .section-heading { margin-bottom:16px; }
+      .section-heading h2 { color:var(--gold); font-family:Georgia,serif; font-size:clamp(24px,3vw,32px); font-weight:500; margin:0 0 6px; }
+      .section-heading p { color:var(--muted); margin:0; font-size:14px; }
+      .story-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+      .story-card { border:1px solid var(--line); border-radius:16px; padding:20px; background:var(--card-bg); }
+      .story-card .story-icon { color:var(--gold); font-size:24px; margin-bottom:8px; }
+      .story-card h3 { margin:0 0 8px; color:var(--gold); font-size:17px; }
+      .story-card p { margin:0; color:var(--muted); font-size:14px; line-height:1.8; }
+      .footer-wrap { margin-top:50px; border-top:1px solid var(--line); background:var(--panel); }
+      .footer-label { display:inline-block; color:var(--gold); border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:10px; letter-spacing:1.8px; margin-bottom:14px; }
+      @media(max-width:800px) { .story-grid { grid-template-columns:1fr; } .main-nav { padding:0 5vw; } .header-tools { flex-wrap:wrap; justify-content:flex-end; } }
+      @media(max-width:520px) { .top { align-items:flex-start; } .header-tools { flex-direction:column; align-items:flex-end; } .theme-toggle { font-size:11px; padding:7px 10px; } }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page-gradient), var(--bg);
+        color: var(--text);
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+        line-height: 1.6;
+      }
+      header {
+        padding: 28px 5vw 22px;
+        border-bottom: 1px solid var(--line);
+        background: #071b17d9;
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        backdrop-filter: blur(14px);
+      }
+      .top {
+        max-width: 1200px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 45px;
+        height: 45px;
+        border: 1px solid var(--gold);
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: var(--gold);
+        font-size: 25px;
+      }
+      .brand h1 {
+        font-size: 19px;
+        margin: 0;
+        letter-spacing: 0.3px;
+      }
+      .brand small {
+        color: var(--muted);
+      }
+      main {
+        max-width: 1200px;
+        margin: 34px auto;
+        padding: 0 5vw;
+      }
+      .hero {
+        padding: 28px 0 25px;
+      }
+      .eyebrow {
+        color: var(--gold);
+        font-size: 12px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .hero h2 {
+        font-family: Georgia, serif;
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 500;
+        line-height: 1.12;
+        margin: 10px 0;
+      }
+      .hero p {
+        color: var(--muted);
+        max-width: 650px;
+        margin: 12px 0 0;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 25px 0;
+      }
+      .stat,
+      .panel,
+      .surah-card {
+        background: linear-gradient(145deg, #12352b, #0b241e);
+        border: 1px solid var(--line);
+        border-radius: 17px;
+      }
+      .stat {
+        padding: 16px 18px;
+      }
+      .stat strong {
+        display: block;
+        color: var(--gold);
+        font-size: 24px;
+      }
+      .stat span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 310px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .panel {
+        padding: 18px;
+      }
+      .panel h3 {
+        font-size: 15px;
+        margin: 0 0 14px;
+      }
+      .search {
+        width: 100%;
+        padding: 13px 14px;
+        background: #071d18;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        color: var(--text);
+        outline: none;
+      }
+      .search:focus,
+      select:focus {
+        border-color: var(--gold);
+      }
+      .filters {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      select {
+        width: 100%;
+        padding: 12px;
+        background: #071d18;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .surah-list {
+        display: grid;
+        gap: 8px;
+        max-height: 600px;
+        overflow: auto;
+        padding-right: 3px;
+      }
+      .surah-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid transparent;
+        border-radius: 11px;
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+      }
+      .surah-item:hover,
+      .surah-item.active {
+        background: var(--panel2);
+        border-color: var(--line);
+      }
+      .num {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        color: var(--gold);
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+      .surah-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .surah-info b {
+        display: block;
+        font-size: 13px;
+      }
+      .surah-info small {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .arabic-name {
+        font-family: "Times New Roman", serif;
+        font-size: 18px;
+      }
+      .reader {
+        min-height: 450px;
+      }
+      .reader-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 15px;
+        margin-bottom: 18px;
+      }
+      .reader-head h3 {
+        margin: 0;
+        font-family: Georgia, serif;
+        font-size: 25px;
+        font-weight: 500;
+      }
+      .reader-head p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        border: 1px solid var(--line);
+        background: #15392e;
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+      }
+      .bismillah {
+        text-align: center;
+        font-family: "Times New Roman", serif;
+        font-size: 29px;
+        color: var(--gold);
+        padding: 15px 0 24px;
+        direction: rtl;
+      }
+      .ayah {
+        padding: 20px 4px;
+        border-bottom: 1px solid #214438;
+      }
+      .ayah-ar {
+        font-family: "Times New Roman", serif;
+        font-size: clamp(25px, 3vw, 34px);
+        line-height: 2.05;
+        text-align: right;
+        direction: rtl;
+        margin-bottom: 12px;
+      }
+      .ayah-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        color: var(--gold);
+        font-size: 12px;
+      }
+      .ayah-id {
+        color: #d4ddd7;
+        font-size: 14px;
+        margin-top: 9px;
+      }
+      .ayah-actions {
+        display: flex;
+        gap: 7px;
+      }
+      .iconbtn {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 5px 9px;
+        cursor: pointer;
+      }
+      .iconbtn.saved {
+        color: var(--gold);
+        border-color: var(--gold);
+      }
+      .empty,
+      .loading {
+        padding: 45px 15px;
+        text-align: center;
+        color: var(--muted);
+      }
+      .notice {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 15px;
+      }
+      .footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 35px 10px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .surah-list {
+          max-height: 280px;
+        }
+        .stats {
+          gap: 8px;
+        }
+        .stat {
+          padding: 12px;
+        }
+        .reader-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        header {
+          padding: 17px 5vw;
+        }
+        .hero {
+          padding-top: 12px;
+        }
+      }
+      @media (max-width: 430px) {
+        .stats {
+          grid-template-columns: 1fr 1fr;
+        }
+        .stat:last-child {
+          grid-column: span 2;
+        }
+        .brand h1 {
+          font-size: 16px;
+        }
+      }
+
+      /* ===== NAVBAR RESPONSIF DESKTOP, TABLET, DAN MOBILE ===== */
+      header {
+        padding: clamp(12px, 2.2vw, 26px) clamp(14px, 4vw, 5vw) 14px;
+      }
+      .top {
+        width: 100%;
+        min-width: 0;
+        flex-wrap: wrap;
+        row-gap: 12px;
+      }
+      .brand {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .brand > div:last-child {
+        min-width: 0;
+      }
+      .brand h1 {
+        font-size: clamp(14px, 1.5vw, 19px);
+        line-height: 1.25;
+      }
+      .brand small {
+        display: block;
+        font-size: clamp(10px, 1vw, 12px);
+        line-height: 1.35;
+      }
+      .logo,
+      .logo img {
+        width: clamp(34px, 3.8vw, 45px);
+        height: clamp(34px, 3.8vw, 45px);
+        flex: 0 0 auto;
+      }
+      .header-tools {
+        flex: 0 0 auto;
+        margin-left: auto;
+      }
+      .main-nav {
+        width: 100%;
+        max-width: 1200px;
+        margin: 12px auto 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .main-nav a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        padding: 7px 12px;
+        font-size: clamp(11px, 1vw, 12px);
+        line-height: 1.25;
+        white-space: nowrap;
+      }
+      .theme-toggle {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      @media (max-width: 800px) {
+        header {
+          padding: 12px 4vw 10px;
+        }
+        .top {
+          gap: 10px;
+        }
+        .main-nav {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          padding: 1px 0 5px;
+          gap: 6px;
+        }
+        .main-nav::-webkit-scrollbar {
+          display: none;
+        }
+        .main-nav a {
+          flex: 0 0 auto;
+          min-height: 32px;
+          padding: 6px 10px;
+          font-size: 11px;
+        }
+        .content-section {
+          scroll-margin-top: 120px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        header {
+          padding: 9px 14px 8px;
+        }
+        .top {
+          flex-wrap: nowrap;
+          align-items: center;
+          gap: 8px;
+        }
+        .brand {
+          gap: 8px;
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .brand h1 {
+          font-size: 13px;
+          letter-spacing: 0;
+        }
+        .brand small {
+          font-size: 9px;
+        }
+        .logo,
+        .logo img {
+          width: 32px;
+          height: 32px;
+          border-radius: 9px;
+        }
+        .header-tools {
+          flex: 0 0 auto;
+          margin: 0;
+        }
+        .theme-toggle {
+          padding: 6px 8px;
+          font-size: 10px;
+          line-height: 1.2;
+        }
+        /* Sembunyikan tanda tangan di baris atas agar navbar tidak sesak.
+           Nama tetap tersedia pada bagian footer. */
+        .top > div:last-child {
+          display: none;
+        }
+        .main-nav {
+          margin-top: 7px;
+          gap: 5px;
+        }
+        .main-nav a {
+          min-height: 29px;
+          padding: 5px 9px;
+          font-size: 10px;
+          border-radius: 8px;
+        }
+        .content-section {
+          scroll-margin-top: 100px;
+        }
+      }
+
+      @media (max-width: 360px) {
+        header {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+        .brand h1 {
+          font-size: 12px;
+        }
+        .brand small {
+          font-size: 8px;
+        }
+        .logo,
+        .logo img {
+          width: 29px;
+          height: 29px;
+        }
+        .theme-toggle {
+          padding: 5px 7px;
+          font-size: 9px;
+        }
+        .main-nav a {
+          padding: 5px 8px;
+          font-size: 9px;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="top">
+        <div class="brand">
+          <div class="">
+            <img
+              src="/22ab9265-bcf6-4199-8d85-96585607057c-removebg-preview.png"
+              alt="logo-qur'an-azan-dwi-utama"
+              style="
+                width: 45px;
+                height: 45px;
+                border-radius: 14px;
+                object-fit: cover;
+              "
+            />
+          </div>
+          <div>
+            <h1>AL-QUR'AN 30 JUZ</h1>
+            <small>Mushaf Digital • Al-Qur'an Al-Karim</small>
+          </div>
+        </div>
+        <div class="header-tools">
+          <button class="theme-toggle" id="themeToggle" type="button">☀️ Tema Terang</button>
+        </div>
+        <div
+          style="
+            color: var(--gold);
+            font-family: Georgia, serif;
+            font-size: 20px;
+          "
+        >
+          أَزَانْ دْوِي أُوتَامَا
+          <br />
+          <small style="color: var(--muted); font-size: 13px"
+            >Azan Dwi Utama</small
+          >
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Navigasi utama">
+        <a href="#beranda">Beranda</a>
+        <a href="#mushaf">Baca Al-Qur'an</a>
+        <a href="#sejarah">Sejarah Turunnya Al-Qur'an</a>
+        <a href="#kisah-nabi">Kisah Para Nabi</a>
+        <a href="#footer">Tentang Website</a>
+      </nav>
+    </header>
+    <main>
+      <section class="hero" id="beranda">
+        <div class="eyebrow">Baca • Pelajari • Renungkan</div>
+        <h2>
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ <br />Temukan ketenangan<br />bersama
+          Al-Qur'an.
+        </h2>
+        <p>
+          Jelajahi 114 surah dan 30 juz Al-Qur'an, lengkap dengan teks Arab,
+          terjemahan Bahasa Indonesia, serta penanda ayat favorit.
+        </p>
+      </section>
+      <div class="stats">
+        <div class="stat">
+          <strong>30</strong><span>Juz Al-Qur'an | الْقُرْآنُ الْكَرِيمُ</span>
+        </div>
+        <div class="stat"><strong>114</strong><span>Surah | سُورَةٌ</span></div>
+        <div class="stat">
+          <strong>6.236</strong
+          ><span>Ayat (riwayat Hafs) | آيَةٌ (رِوَايَةُ حَفْصٍ)</span>
+        </div>
+      </div>
+      <div class="layout" id="mushaf">
+        <aside class="panel">
+          <h3>Jelajahi Al-Qur'an</h3>
+          <div class="filters">
+            <input
+              id="search"
+              class="search"
+              placeholder="Cari nama surah..."
+              aria-label="Cari surah"
+            /><select id="juz">
+              <option value="">Pilih Juz (1–30)</option></select
+            ><select id="sort">
+              <option value="number">Urutkan: Nomor surah</option>
+              <option value="name">Urutkan: Nama surah</option>
+            </select>
+          </div>
+          <div id="surahList" class="surah-list">
+            <div class="loading">Memuat daftar surah...</div>
+          </div>
+          <p class="notice">
+            Daftar surah dan ayat dimuat dari layanan API Al-Qur'an. Pastikan
+            perangkat terhubung ke internet.
+          </p>
+        </aside>
+        <section class="panel reader">
+          <div id="reader">
+            <div class="empty">
+              <div style="font-size: 45px; color: var(--gold)">
+                <img
+                  src="/22ab9265-bcf6-4199-8d85-96585607057c-removebg-preview.png"
+                  alt=""
+                  style="
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 14px;
+                    object-fit: cover;
+                  "
+                />
+              </div>
+              <h3>Pilih surah atau juz</h3>
+              <p>
+                Mulai membaca Al-Qur'an dari daftar di sebelah kiri. <br />
+                Utamakan membaca taawuz (أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ
+                الرَّجِيمِ) <br />
+                dan basmalah (بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ) sebelum
+                membaca Al-Qur'an
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== BAGIAN: SEJARAH TURUNNYA AL-QUR'AN ===== -->
+      <section class="content-section" id="sejarah">
+        <div class="section-heading">
+          <h2>Sejarah Turunnya Al-Qur'an</h2>
+          <p>Mengenal proses turunnya wahyu sebagai petunjuk bagi umat manusia.</p>
+        </div>
+        <div class="story-grid">
+          <article class="story-card">
+            <div class="story-icon">☾</div>
+            <h3>Awal Turunnya Wahyu</h3>
+            <p>Al-Qur'an diturunkan kepada Nabi Muhammad ﷺ melalui Malaikat Jibril. Wahyu pertama yang dikenal luas adalah Surah Al-'Alaq ayat 1–5, yang diterima ketika Nabi Muhammad ﷺ berada di Gua Hira. Peristiwa ini menjadi awal masa kenabian beliau.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-icon">📖</div>
+            <h3>Turun Secara Bertahap</h3>
+            <p>Al-Qur'an diturunkan secara berangsur-angsur selama masa kerasulan Nabi Muhammad ﷺ, sekitar 23 tahun. Ayat-ayat turun sesuai kehendak Allah dan berbagai keadaan, sebagai bimbingan dan penguat hati Rasulullah serta kaum muslimin.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-icon">🕋</div>
+            <h3>Makkiyah dan Madaniyah</h3>
+            <p>Dalam pembagian yang umum digunakan, Makkiyah berkaitan dengan masa sebelum hijrah, sedangkan Madaniyah berkaitan dengan masa setelah hijrah. Keduanya memuat petunjuk akidah, ibadah, akhlak, dan kehidupan bermasyarakat.</p>
+          </article>
+          <article class="story-card">
+            <div class="story-icon">✦</div>
+            <h3>Al-Qur'an sebagai Petunjuk</h3>
+            <p>Al-Qur'an menjadi pedoman hidup umat Islam. Di dalamnya terdapat ajaran tentang keimanan, ibadah, akhlak, kisah umat terdahulu, serta tuntunan untuk menjalani kehidupan dengan kebaikan.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== BAGIAN: KISAH PARA NABI ===== -->
+      <section class="content-section" id="kisah-nabi">
+        <div class="section-heading">
+          <h2>Kisah Para Nabi</h2>
+          <p>Ringkasan kisah teladan para nabi yang disebutkan dalam Al-Qur'an.</p>
+        </div>
+        <div class="story-grid">
+          <article class="story-card"><div class="story-icon">🌿</div><h3>Nabi Adam عليه السلام</h3><p>Nabi Adam adalah manusia pertama yang diciptakan Allah. Kisah beliau mengajarkan ketaatan, ujian, penyesalan, dan pentingnya memohon ampun kepada Allah.</p></article>
+          <article class="story-card"><div class="story-icon">🌊</div><h3>Nabi Nuh عليه السلام</h3><p>Nabi Nuh berdakwah kepada kaumnya dalam waktu yang sangat lama. Kisah beliau mengajarkan kesabaran dalam berdakwah dan keteguhan untuk tetap beriman kepada Allah.</p></article>
+          <article class="story-card"><div class="story-icon">🔥</div><h3>Nabi Ibrahim عليه السلام</h3><p>Nabi Ibrahim dikenal karena keteguhan tauhid dan ketaatannya kepada Allah. Kisah beliau mengajarkan keberanian membela kebenaran dan keikhlasan.</p></article>
+          <article class="story-card"><div class="story-icon">🐋</div><h3>Nabi Yunus عليه السلام</h3><p>Nabi Yunus menghadapi ujian ketika berada dalam perut ikan. Kisah ini mengingatkan tentang doa, taubat, dan luasnya rahmat Allah.</p></article>
+          <article class="story-card"><div class="story-icon">🌙</div><h3>Nabi Yusuf عليه السلام</h3><p>Kisah Nabi Yusuf memuat ujian keluarga, kesabaran, menjaga kehormatan diri, dan memaafkan. Kisahnya dijelaskan secara khusus dalam Surah Yusuf.</p></article>
+          <article class="story-card"><div class="story-icon">✨</div><h3>Nabi Muhammad ﷺ</h3><p>Nabi Muhammad ﷺ adalah nabi dan rasul terakhir. Beliau menerima Al-Qur'an sebagai wahyu dan menyampaikan risalah Islam dengan kasih sayang, kesabaran, serta akhlak mulia.</p></article>
+        </div>
+        <p class="notice">Catatan: bagian kisah ini merupakan pengantar singkat. Untuk memahami kisah secara lengkap, rujuk ayat-ayat Al-Qur'an beserta tafsir yang tepercaya.</p>
+      </section>
+
+      <!-- ===== FOOTER WEBSITE: BAGIAN PALING BAWAH HALAMAN ===== -->
+      <div class="footer-wrap" id="footer">
+        <footer class="footer">
+          
+          بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br />
+          Semoga setiap ayat menjadi cahaya dan petunjuk dalam kehidupan.<br />
+          Website ini dibuat oleh <span style="color:var(--gold);font-weight:bold">Azan Dwi Utama</span><br />
+          Copyright © 2026. All rights reserved.<br />
+          Konten ayat dan terjemahan dimuat melalui Al-Qur'an API.<br />
+          <a href="https://alquran.cloud" target="_blank" rel="noopener noreferrer" style="color:var(--gold);font-weight:bold">API Al-Qur'an</a>
+        </footer>
+    </main>
+    <script>
+      const API = "https://api.alquran.cloud/v1";
+      let surahs = [],
+        currentAudio = null;
+      const $ = (id) => document.getElementById(id);
+      const bookmarks = () =>
+        JSON.parse(localStorage.getItem("quranBookmarks") || "[]");
+      function saveBookmarks(v) {
+        localStorage.setItem("quranBookmarks", JSON.stringify(v));
+      }
+      async function api(path) {
+        const r = await fetch(API + path);
+        if (!r.ok) throw Error("Gagal mengambil data");
+        const j = await r.json();
+        if (j.code !== 200) throw Error(j.status || "Data tidak tersedia");
+        return j.data;
+      }
+      function initJuz() {
+        for (let i = 1; i <= 30; i++) {
+          const o = document.createElement("option");
+          o.value = i;
+          o.textContent = "Juz " + i;
+          $("juz").append(o);
+        }
+      }
+      function renderList() {
+        const q = $("search").value.toLowerCase();
+        let arr = surahs.filter(
+          (s) =>
+            s.englishName.toLowerCase().includes(q) ||
+            s.name.includes(q) ||
+            s.englishNameTranslation.toLowerCase().includes(q),
+        );
+        if ($("sort").value === "name")
+          arr.sort((a, b) => a.englishName.localeCompare(b.englishName));
+        $("surahList").innerHTML = "";
+        arr.forEach((s) => {
+          const b = document.createElement("button");
+          b.className = "surah-item" + (Number(b.dataset.id) === 0 ? "" : "");
+          b.innerHTML = `<span class="num">${s.number}</span><span class="surah-info"><b>${s.englishName}</b><small>${s.englishNameTranslation} • ${s.numberOfAyahs} ayat</small></span><span class="arabic-name">${s.name}</span>`;
+          b.onclick = () => loadSurah(s.number);
+          $("surahList").append(b);
+        });
+      }
+      function setLoading(msg) {
+        $("reader").innerHTML = `<div class="loading">${msg}</div>`;
+      }
+      async function loadSurah(n) {
+        $("juz").value = "";
+        setLoading("Memuat surah...");
+        try {
+          const [ar, id] = await Promise.all([
+            api(`/surah/${n}`),
+            api(`/surah/${n}/id.indonesian`),
+          ]);
+          renderAyahs(
+            ar,
+            id,
+            `${ar.englishName} (${ar.name})`,
+            `${ar.revelationType} • ${ar.numberOfAyahs} ayat`,
+          );
+        } catch (e) {
+          setLoading(
+            "Tidak dapat memuat ayat. Periksa koneksi internet lalu coba lagi.",
+          );
+        }
+      }
+      async function loadJuz(n) {
+        setLoading("Memuat Juz " + n + "...");
+        try {
+          const [ar, id] = await Promise.all([
+            api(`/juz/${n}/quran-uthmani`),
+            api(`/juz/${n}/id.indonesian`),
+          ]);
+          renderAyahs(ar, id, "Juz " + n, `${ar.ayahs.length} ayat`);
+        } catch (e) {
+          setLoading(
+            "Tidak dapat memuat juz. Periksa koneksi internet lalu coba lagi.",
+          );
+        }
+      }
+      function renderAyahs(ar, id, title, subtitle) {
+        const rows = ar.ayahs.map((a, i) => ({ a, t: id.ayahs[i] }));
+        $("reader").innerHTML =
+          `<div class="reader-head"><div><h3>${title}</h3><p>${subtitle}</p></div><div class="actions"><button class="btn" id="topBtn">↑ Ke atas</button><button class="btn" id="stopAudio">■ Hentikan audio</button></div></div>${ar.number !== 9 && ar.number !== 1 ? '<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>' : ""}<div id="ayahContainer"></div>`;
+        const c = $("ayahContainer");
+        rows.forEach(({ a, t }) => {
+          const key = `${a.surah.number}:${a.numberInSurah}`;
+          const saved = bookmarks().includes(key);
+          const el = document.createElement("article");
+          el.className = "ayah";
+          el.innerHTML = `<div class="ayah-ar">${a.text}</div><div class="ayah-meta"><span>${a.surah.englishName} • Ayat ${a.numberInSurah}</span><div class="ayah-actions"><button class="iconbtn ${saved ? "saved" : ""}" title="Simpan ayat" aria-label="Simpan ayat">${saved ? "★" : "☆"}</button></div></div><div class="ayah-id">${t.text}</div>`;
+          el.querySelector("button").onclick = () => {
+            let b = bookmarks();
+            if (b.includes(key)) b = b.filter((x) => x !== key);
+            else b.push(key);
+            saveBookmarks(b);
+            el.querySelector("button").classList.toggle(
+              "saved",
+              b.includes(key),
+            );
+            el.querySelector("button").textContent = b.includes(key)
+              ? "★"
+              : "☆";
+          };
+          c.append(el);
+        });
+        $("topBtn").onclick = () =>
+          $("reader").scrollIntoView({ behavior: "smooth" });
+        $("stopAudio").onclick = () => {
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+          }
+        };
+      }
+      // ===== PENGATURAN TEMA TERANG / GELAP =====
+      const themeToggle = $("themeToggle");
+      function applyTheme(theme) {
+        const light = theme === "light";
+        document.body.classList.toggle("light-theme", light);
+        themeToggle.textContent = light ? "🌙 Tema Gelap" : "☀️ Tema Terang";
+        localStorage.setItem("quranTheme", theme);
+      }
+      applyTheme(localStorage.getItem("quranTheme") || "dark");
+      themeToggle.addEventListener("click", () => {
+        applyTheme(document.body.classList.contains("light-theme") ? "dark" : "light");
+      });
+
+      $("search").addEventListener("input", renderList);
+      $("sort").addEventListener("change", renderList);
+      $("juz").addEventListener("change", (e) => {
+        if (e.target.value) loadJuz(e.target.value);
+      });
+      (async () => {
+        initJuz();
+        try {
+          surahs = await api("/surah");
+          renderList();
+        } catch (e) {
+          $("surahList").innerHTML =
+            '<div class="empty">Gagal memuat daftar surah. Silakan muat ulang halaman.</div>';
+        }
+      })();
+    </script>
+  </body>
+</html>
